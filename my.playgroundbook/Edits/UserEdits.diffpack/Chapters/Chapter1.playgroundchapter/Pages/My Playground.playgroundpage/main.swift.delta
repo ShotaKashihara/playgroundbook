@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Diff</key>
+	<array>
+		<dict>
+			<key>ModifiedContent</key>
+			<string>import Foundation
+
+public protocol EmptyInitializable {
+    init()
+}
+
+@propertyWrapper
+public struct EmptyDecoded&lt;T: Decodable &amp; EmptyInitializable&gt;: Decodable {
+    public var wrappedValue: T
+    
+    public init(wrappedValue: T) {
+        self.wrappedValue = wrappedValue
+    }
+    
+    public init(from decoder: Decoder) throws {
+        guard let container = try? decoder.singleValueContainer(),
+              let value = try? container.decode(T.self) else {
+            wrappedValue = T()
+            return
+        }
+        wrappedValue = value
+    }
+}
+extension EmptyDecoded: Equatable where T: Equatable {}
+extension EmptyDecoded: Hashable where T: Hashable {}
+extension KeyedDecodingContainer {
+    public func decode&lt;T&gt;(_ type: EmptyDecoded&lt;T&gt;.Type, forKey key: K) throws -&gt; EmptyDecoded&lt;T&gt; where T: Decodable &amp; EmptyInitializable {
+        try EmptyDecoded&lt;T&gt;(from: superDecoder(forKey: key))
+    }
+}
+
+struct Info: Decodable {
+    @EmptyDecoded
+    var animal: Animal
+    
+    enum Animal: String, Decodable, EmptyInitializable {
+        case dog
+        case cat
+        case unknown
+        
+        init() {
+            self = .unknown
+        }
+    }
+}
+
+let a = Info(animal: .dog)
+print(a)
+
+let data = """
+{
+  "animal": "cat2"
+}
+""".data(using: .utf8)!
+let aa = JSONDecoder()
+let aaa = try! aa.decode(Info.self, from: data)
+
+print(aaa)
+
+</string>
+			<key>ModifiedRange</key>
+			<string>{1, 1353}</string>
+			<key>OriginalContent</key>
+			<string></string>
+			<key>OriginalRange</key>
+			<string>{1, 0}</string>
+		</dict>
+	</array>
+	<key>File</key>
+	<string>Chapters/Chapter1.playgroundchapter/Pages/My Playground.playgroundpage/main.swift</string>
+</dict>
+</plist>
